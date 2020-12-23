@@ -1,23 +1,27 @@
 import Axios from 'axios'
 import React, {useEffect, useState} from 'react'
+import { Button } from 'antd'
 
 function Favorite(props) {
 
     const movieId = props.movieId
     const userFrom = props.userFrom
-    const movieTitle = props.movieInfo.movieTitle
+    const movieTitle = props.movieInfo.original_title
     const moviePost = props.movieInfo.backdrop_path
     const movieRunTime = props.movieInfo.runtime
 
     const [FavoriteNumber, setFavoriteNumber] = useState(0)
     const [Favorited, setFavorited] = useState(false)
 
-    useEffect(() => {
+    let variables = {
+        userFrom: userFrom,
+        movieId: movieId,
+        movieTitle: movieTitle,
+        moviePost: moviePost,
+        movieRunTime: movieRunTime
+    }
 
-        let variables = {
-            userFrom: userFrom,
-            movieId: movieId
-        }
+    useEffect(() => {
 
         Axios.post('/api/favorite/favoriteNumber', variables)
             .then(response => {
@@ -42,9 +46,36 @@ function Favorite(props) {
 
     }, [])
 
+    const onClickFavorite = () => {
+
+        if(Favorited) {
+            Axios.post('/api/favorite/removeFromFavorite', variables)
+                .then(response => {
+                    if(response.data.success) {
+                        setFavoriteNumber(FavoriteNumber-1)               
+                        setFavorited(!Favorited)
+                    } else {
+                        alert('Favorite remove err')
+                    }
+                })
+
+        } else {
+            Axios.post('/api/favorite/addToFavorite', variables)
+                .then(response => {
+                    if(response.data.success) {
+                        setFavoriteNumber(FavoriteNumber+1)               
+                        setFavorited(!Favorited)
+                    } else {
+                        alert('Favorite add err')
+                    }
+                })
+        }
+    }
+
+
     return (
         <div>
-            <button>{Favorited ? " Not Favorite" : " Add to Favorite "} {FavoriteNumber}</button>
+            <Button onClick={onClickFavorite}>{Favorited ? " Not Favorite" : " Add to Favorite "} {FavoriteNumber}</Button>
         </div>
     )
 }
